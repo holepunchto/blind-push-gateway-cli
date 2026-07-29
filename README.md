@@ -6,7 +6,7 @@ CLI to run the blind-push-gateway service. It listens on Hyperswarm, accepts `fo
 
 Uses [blind-push-gateway](https://github.com/holepunchto/blind-push-gateway) under the hood.
 
-Supports both Node.js and Bare.
+Supports Node.js only.
 
 ## Install
 
@@ -18,7 +18,6 @@ npm install -g blind-push-gateway-cli
 
 ```sh
 blind-push-gateway run [options]
-blind-push-gateway-bare run [options]
 ```
 
 Create a config file at `~/.blind-push-gateway/config.json`:

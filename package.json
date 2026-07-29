@@ -4,12 +4,10 @@
   "description": "CLI for blind-push-gateway",
   "main": "index.js",
   "bin": {
-    "blind-push-gateway": "bin.js",
-    "blind-push-gateway-bare": "bin-bare.js"
+    "blind-push-gateway": "bin.js"
   },
   "files": [
     "bin.js",
-    "bin-bare.js",
     "lib/"
   ],
   "scripts": {
@@ -18,9 +16,6 @@
     "test": "brittle-node -c test.js"
   },
   "dependencies": {
-    "bare-fs": "^4.7.4",
-    "bare-os": "^3.9.3",
-    "bare-path": "^3.1.1",
     "blind-push-gateway": "^0.3.0",
     "corestore": "^7.9.1",
     "firebase-admin": "^14.0.0",
@@ -30,14 +25,10 @@
     "hyperdht": "^6.32.0",
     "paparam": "^1.10.1",
     "pino": "^10.3.1",
-    "pino-bare": "^0.1.0",
     "protomux-rpc-router": "^1.0.0",
     "ready-resource": "^1.2.0"
   },
   "devDependencies": {
-    "bare-process": "^4.5.1",
-    "bare-prom-client": "^15.1.9",
-    "bare-subprocess": "^6.1.0",
     "brittle": "^4.0.1",
     "lunte": "^1.6.0",
     "newline-decoder": "^1.0.2",
@@ -45,32 +36,6 @@
     "prettier-config-holepunch": "^2.0.0",
     "protomux-rpc": "^1.9.0",
     "which-runtime": "^1.4.0"
-  },
-  "imports": {
-    "child_process": {
-      "bare": "bare-subprocess",
-      "default": "child_process"
-    },
-    "fs": {
-      "bare": "bare-fs",
-      "default": "fs"
-    },
-    "os": {
-      "bare": "bare-os",
-      "default": "os"
-    },
-    "path": {
-      "bare": "bare-path",
-      "default": "path"
-    },
-    "pino": {
-      "bare": "pino-bare",
-      "default": "pino"
-    },
-    "process": {
-      "bare": "bare-process",
-      "default": "process"
-    }
   },
   "author": "Holepunch",
   "license": "Apache-2.0",

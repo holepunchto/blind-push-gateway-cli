@@ -10,13 +10,12 @@ const HyperDHT = require('hyperdht')
 const IdEnc = require('hypercore-id-encoding')
 const NewlineDecoder = require('newline-decoder')
 const ProtomuxRPC = require('protomux-rpc')
-const { isBare } = require('which-runtime')
 
 const blindPush = require('blind-push')
 const { ForwardPushRequest } = require('blind-push/encodings')
 
 const DEBUG = false
-const EXECUTABLE = path.join(__dirname, isBare ? 'bin-bare.js' : 'bin.js')
+const EXECUTABLE = path.join(__dirname, 'bin.js')
 
 test('bin', async (t) => {
   const testnet = await createTestnet()
