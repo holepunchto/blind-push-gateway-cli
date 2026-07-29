@@ -31,6 +31,7 @@
     "hyperdht": "^6.32.0",
     "paparam": "^1.10.1",
     "pino": "^10.3.1",
+    "pino-bare": "^0.1.0",
     "protomux-rpc-router": "^1.0.0",
     "ready-resource": "^1.2.0"
   },
@@ -55,9 +56,17 @@
       "bare": "bare-fs",
       "default": "fs"
     },
+    "os": {
+      "bare": "bare-os",
+      "default": "os"
+    },
     "path": {
       "bare": "bare-path",
       "default": "path"
+    },
+    "pino": {
+      "bare": "pino-bare",
+      "default": "pino"
     },
     "process": {
       "bare": "bare-process",

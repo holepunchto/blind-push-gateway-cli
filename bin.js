@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const fs = require('fs/promises')
+const fs = require('fs').promises
 const os = require('os')
 const path = require('path')
 const Corestore = require('corestore')
