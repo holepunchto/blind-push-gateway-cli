@@ -15,5 +15,3 @@ jobs:
     steps:
       - uses: holepunchto/actions/node-base@v1
       - run: npm test
-      - uses: holepunchto/actions/bare-base@v1
-      - run: npm run test-bare

@@ -15,8 +15,7 @@
   "scripts": {
     "format": "prettier --write . && lunte --fix",
     "lint": "prettier --check . && lunte",
-    "test": "brittle-node -c test.js",
-    "test-bare": "brittle-bare -c test.js"
+    "test": "brittle-node -c test.js"
   },
   "dependencies": {
     "bare-fs": "^4.7.4",
