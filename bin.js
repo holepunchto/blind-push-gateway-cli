@@ -42,9 +42,7 @@ const runCmd = command(
     logger.info(`Reading config from: ${configPath}`)
     const config = JSON.parse(await fs.readFile(configPath, 'utf8'))
 
-    const dryRun = !!config.dryRun
-
-    if (!config.certPath && !dryRun) {
+    if (!config.certPath) {
       logger.error('Config requires a certPath')
       process.exit(1)
     }
@@ -59,20 +57,9 @@ const runCmd = command(
     })
     const router = new ProtomuxRPCRouter()
 
-    let pushService
-    if (dryRun) {
-      pushService = {
-        ready: async () => {},
-        close: async () => {},
-        send: async (message) => {
-          logger.info({ message }, 'dry-run push')
-        }
-      }
-    } else {
-      const certPath = path.resolve(path.dirname(configPath), config.certPath)
-      logger.info(`Using Firebase credential: ${certPath}`)
-      pushService = new FcmPushService(certPath)
-    }
+    const certPath = path.resolve(path.dirname(configPath), config.certPath)
+    logger.info(`Using Firebase credential: ${certPath}`)
+    const pushService = new FcmPushService(certPath)
 
     const service = new BlindPushGateway(dht, router, pushService, {
       notification: config.notification,

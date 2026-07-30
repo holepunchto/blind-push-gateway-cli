@@ -41,24 +41,10 @@ The service logs its public key on startup. Clients can connect to that swarm ke
 
 ## Config
 
-- `certPath`: path to a Firebase service account JSON file, relative to the config file. Required unless `dryRun` is set.
-- `dryRun`: when `true`, log push payloads instead of sending them through Firebase. Useful for local testing.
+- `certPath`: path to a Firebase service account JSON file, relative to the config file. Required.
 - `bootstrap`: optional HyperDHT bootstrap nodes array. Use this to join a testnet or a custom DHT network.
 - `notification`: default notification payload shown to users.
 - `apnsTopic`: APNS topic, defaults to `io.keet.app`.
-
-Example dry-run config for local testing:
-
-```json
-{
-  "dryRun": true,
-  "notification": {
-    "title": "Keet",
-    "body": "✉️"
-  },
-  "apnsTopic": "io.keet.app"
-}
-```
 
 ## CLI Options
 
@@ -70,7 +56,7 @@ Example dry-run config for local testing:
 
 ## How It Works
 
-1. The operator starts the gateway with Firebase service account credentials (or in dry-run mode).
+1. The operator starts the gateway with Firebase service account credentials.
 2. The gateway listens on Hyperswarm and accepts RPC connections through `protomux-rpc-router`.
 3. A client sends a `forward-push` request encoded with `blind-push/encodings`.
 4. The gateway encodes the request, derives Android/APNS fields, and forwards the message through the configured push service.
