@@ -16,7 +16,7 @@
     "test": "npm run lint"
   },
   "dependencies": {
-    "blind-push-gateway": "^0.3.0",
+    "blind-push-gateway": "^1.0.0",
     "corestore": "^7.9.1",
     "firebase-admin": "^14.0.0",
     "graceful-goodbye": "^1.3.3",
