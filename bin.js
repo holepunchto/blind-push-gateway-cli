@@ -35,6 +35,8 @@ const runCmd = command(
     'Secret of the dht-prometheus scraper.  Can be hex or z32.'
   ),
   flag('--scraper-alias [scraper-alias]', '(optional) Alias with which to register to the scraper'),
+  flag('--dry-run', 'Dry-run mode without Firebase'),
+  flag('--bootstrap [bootstrap]', 'Bootstrap nodes for the DHT'),
   async function ({ flags }) {
     const logger = pino({ name: SERVICE_NAME })
 
@@ -42,7 +44,7 @@ const runCmd = command(
     logger.info(`Reading config from: ${configPath}`)
     const config = JSON.parse(await fs.readFile(configPath, 'utf8'))
 
-    if (!config.certPath) {
+    if (!config.certPath && !flags.dryRun) {
       logger.error('Config requires a certPath')
       process.exit(1)
     }
@@ -53,13 +55,24 @@ const runCmd = command(
     const store = new Corestore(storage)
     const dht = new HyperDHT({
       keyPair: await store.createKeyPair('swarm-key'),
-      bootstrap: config.bootstrap
+      ...(flags.bootstrap ? { bootstrap: JSON.parse(flags.bootstrap) } : {})
     })
     const router = new ProtomuxRPCRouter()
 
-    const certPath = path.resolve(path.dirname(configPath), config.certPath)
-    logger.info(`Using Firebase credential: ${certPath}`)
-    const pushService = new FcmPushService(certPath)
+    let pushService
+    if (flags.dryRun) {
+      pushService = {
+        ready: async () => {},
+        close: async () => {},
+        send: async (message) => {
+          logger.info({ message }, 'dry-run push')
+        }
+      }
+    } else {
+      const certPath = path.resolve(path.dirname(configPath), config.certPath)
+      logger.info(`Using Firebase credential: ${certPath}`)
+      pushService = new FcmPushService(certPath)
+    }
 
     const service = new BlindPushGateway(dht, router, pushService, {
       notification: config.notification,

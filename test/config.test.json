@@ -1,0 +1,7 @@
+{
+  "notification": {
+    "title": "Keet",
+    "body": "✉️"
+  },
+  "apnsTopic": "io.keet.app"
+}
