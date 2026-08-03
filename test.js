@@ -1,6 +1,6 @@
 const test = require('brittle')
 const { spawn } = require('child_process')
-const fs = require('fs').promises
+const fs = require('fs/promises')
 const path = require('path')
 const process = require('process')
 const b4a = require('b4a')
