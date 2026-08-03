@@ -15,8 +15,8 @@ const blindPush = require('blind-push')
 const { ForwardPushRequest } = require('blind-push/encodings')
 
 const DEBUG = false
-const EXECUTABLE = path.join(__dirname, 'bin.js')
-const CONFIG = path.join(__dirname, 'test', 'config.test.json')
+const EXECUTABLE = path.join(__dirname, '..', 'bin.js')
+const CONFIG = path.join(__dirname, 'config.test.json')
 
 test('bin', async (t) => {
   const testnet = await createTestnet()

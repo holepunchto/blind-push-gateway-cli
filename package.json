@@ -13,7 +13,7 @@
   "scripts": {
     "format": "prettier --write . && lunte --fix",
     "lint": "prettier --check . && lunte",
-    "test": "brittle-node -c test.js"
+    "test": "npm run lint && brittle-node -c test/test.js"
   },
   "dependencies": {
     "blind-push-gateway": "^1.0.0",
