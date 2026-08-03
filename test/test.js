@@ -8,13 +8,13 @@ const cenc = require('compact-encoding')
 const createTestnet = require('hyperdht/testnet')
 const HyperDHT = require('hyperdht')
 const IdEnc = require('hypercore-id-encoding')
-const NewlineDecoder = require('newline-decoder')
 const ProtomuxRPC = require('protomux-rpc')
 
 const blindPush = require('blind-push')
 const { ForwardPushRequest } = require('blind-push/encodings')
 
-const DEBUG = false
+const { waitForOutput } = require('./helpers')
+
 const EXECUTABLE = path.join(__dirname, '..', 'bin.js')
 const CONFIG = path.join(__dirname, 'config.test.json')
 
@@ -26,9 +26,6 @@ test('bin', async (t) => {
   const dir = await t.tmp()
   const cliStorageDir = path.join(dir, 'cli-storage')
   await fs.mkdir(cliStorageDir)
-
-  const tRun = t.test('CLI starts')
-  tRun.plan(1)
 
   const proc = spawn(process.execPath, [
     EXECUTABLE,
@@ -55,37 +52,10 @@ test('bin', async (t) => {
     t.fail('There should be no stderr')
   })
 
-  let publicKey = null
-  let pushedMessage = null
-  const tPush = t.test('dry-run push')
-  tPush.plan(1)
+  const publicKeyPromise = waitForOutput(proc, 'Public key:')
+  const pushPromise = waitForOutput(proc, 'dry-run push')
 
-  const stdoutDec = new NewlineDecoder('utf-8')
-  proc.stdout.on('data', (d) => {
-    if (DEBUG) console.log(d.toString())
-
-    for (const line of stdoutDec.push(d)) {
-      let parsed = null
-      try {
-        parsed = JSON.parse(line)
-      } catch {
-        continue
-      }
-
-      const msg = parsed.msg || ''
-      if (msg.includes('Public key:') && !publicKey) {
-        tRun.pass('public key is printed')
-        publicKey = msg.split('Public key: ')[1]
-      }
-
-      if (msg === 'dry-run push' && parsed.message && !pushedMessage) {
-        tPush.pass('push was logged')
-        pushedMessage = parsed.message
-      }
-    }
-  })
-
-  await tRun
+  const publicKey = JSON.parse(await publicKeyPromise).msg.split('Public key: ')[1]
   t.ok(publicKey, 'got public key')
 
   const rpc = await setupClient(t, bootstrap, IdEnc.decode(publicKey))
@@ -104,7 +74,7 @@ test('bin', async (t) => {
     responseEncoding: cenc.none
   })
 
-  await tPush
+  const pushedMessage = JSON.parse(await pushPromise).message
 
   const encodedPayload = b4a.toString(blindPush.encode(req.payload), 'base64')
   t.is(pushedMessage.topic, b4a.toString(req.payload.discoveryKey, 'hex'))
