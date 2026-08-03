@@ -9,11 +9,10 @@ const createTestnet = require('hyperdht/testnet')
 const HyperDHT = require('hyperdht')
 const IdEnc = require('hypercore-id-encoding')
 const ProtomuxRPC = require('protomux-rpc')
+const NewlineDecoder = require('newline-decoder')
 
 const blindPush = require('blind-push')
 const { ForwardPushRequest } = require('blind-push/encodings')
-
-const { waitForOutput } = require('./helpers')
 
 const EXECUTABLE = path.join(__dirname, '..', 'bin.js')
 const CONFIG = path.join(__dirname, 'config.test.json')
@@ -108,4 +107,22 @@ async function setupClient(t, bootstrap, serverPublicKey) {
   await rpc.fullyOpened()
 
   return rpc
+}
+
+async function waitForOutput(proc, text, timeout = 30000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Timeout waiting for "${text}"`))
+    }, timeout)
+
+    const stdoutDec = new NewlineDecoder('utf-8')
+    proc.stdout.on('data', (d) => {
+      for (const line of stdoutDec.push(d)) {
+        if (line.includes(text)) {
+          clearTimeout(timer)
+          resolve(line)
+        }
+      }
+    })
+  })
 }
