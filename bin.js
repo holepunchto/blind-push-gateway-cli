@@ -35,6 +35,8 @@ const runCmd = command(
     'Secret of the dht-prometheus scraper.  Can be hex or z32.'
   ),
   flag('--scraper-alias [scraper-alias]', '(optional) Alias with which to register to the scraper'),
+  flag('--dry-run', 'Dry-run mode without Firebase'),
+  flag('--bootstrap [bootstrap]', 'Bootstrap nodes for the DHT'),
   async function ({ flags }) {
     const logger = pino({ name: SERVICE_NAME })
 
@@ -42,9 +44,7 @@ const runCmd = command(
     logger.info(`Reading config from: ${configPath}`)
     const config = JSON.parse(await fs.readFile(configPath, 'utf8'))
 
-    const dryRun = !!config.dryRun
-
-    if (!config.certPath && !dryRun) {
+    if (!config.certPath && !flags.dryRun) {
       logger.error('Config requires a certPath')
       process.exit(1)
     }
@@ -55,12 +55,12 @@ const runCmd = command(
     const store = new Corestore(storage)
     const dht = new HyperDHT({
       keyPair: await store.createKeyPair('swarm-key'),
-      bootstrap: config.bootstrap
+      ...(flags.bootstrap ? { bootstrap: JSON.parse(flags.bootstrap) } : {})
     })
     const router = new ProtomuxRPCRouter()
 
     let pushService
-    if (dryRun) {
+    if (flags.dryRun) {
       pushService = {
         ready: async () => {},
         close: async () => {},

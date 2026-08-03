@@ -30,13 +30,11 @@ test('bin', async (t) => {
   await fs.writeFile(
     configLoc,
     JSON.stringify({
-      dryRun: true,
       notification: {
         title: 'Keet',
         body: '✉️'
       },
-      apnsTopic: 'io.keet.app',
-      bootstrap
+      apnsTopic: 'io.keet.app'
     })
   )
 
@@ -49,7 +47,10 @@ test('bin', async (t) => {
     '--config',
     configLoc,
     '--storage',
-    cliStorageDir
+    cliStorageDir,
+    '--dry-run',
+    '--bootstrap',
+    JSON.stringify(bootstrap)
   ])
 
   // To avoid zombie processes in case there's an error
