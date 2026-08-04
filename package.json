@@ -2,7 +2,7 @@
   "name": "blind-push-gateway-cli",
   "version": "0.0.0",
   "description": "CLI for blind-push-gateway",
-  "main": "index.js",
+  "main": "bin.js",
   "bin": {
     "blind-push-gateway": "bin.js"
   },
