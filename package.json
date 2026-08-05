@@ -25,6 +25,7 @@
     "hyperdht": "^6.32.0",
     "paparam": "^1.10.1",
     "pino": "^10.3.1",
+    "protomux-rpc-middleware": "^1.0.2",
     "protomux-rpc-router": "^1.0.0",
     "ready-resource": "^1.2.0"
   },
