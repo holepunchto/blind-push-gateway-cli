@@ -6,6 +6,7 @@ const path = require('path')
 const Corestore = require('corestore')
 const HyperDHT = require('hyperdht')
 const ProtomuxRPCRouter = require('protomux-rpc-router')
+const { Logger } = require('protomux-rpc-middleware')
 const IdEnc = require('hypercore-id-encoding')
 const goodbye = require('graceful-goodbye')
 const { command, flag } = require('paparam')
@@ -58,6 +59,7 @@ const runCmd = command(
       ...(flags.bootstrap ? { bootstrap: JSON.parse(flags.bootstrap) } : {})
     })
     const router = new ProtomuxRPCRouter()
+    router.use(new Logger(logger))
 
     let pushService
     if (flags.dryRun) {
