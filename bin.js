@@ -72,6 +72,9 @@ const runCmd = command(
       const certPath = path.resolve(path.dirname(configPath), config.certPath)
       logger.info(`Using Firebase credential: ${certPath}`)
       pushService = new FcmPushService(certPath)
+      pushService.on('push-error', ({ err, topic }) => {
+        logger.error({ err, topic }, 'Firebase push error')
+      })
     }
 
     const service = new BlindPushGateway(dht, router, pushService, {
