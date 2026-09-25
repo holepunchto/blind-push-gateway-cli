@@ -68,7 +68,7 @@ test('bin', async (t) => {
   }
 
   const pushPromise = waitForOutput(proc, 'dry-run push')
-  const requestLogPromise = waitForOutput(proc, '[method=forward-push]')
+  const requestLogPromise = waitForOutput(proc, 'Request succeeded')
   await rpc.request('forward-push', req, {
     requestEncoding: ForwardPushRequest,
     responseEncoding: cenc.none
@@ -86,11 +86,12 @@ test('bin', async (t) => {
   t.is(pushedMessage.apns.payload.aps.threadId, b4a.toString(req.payload.discoveryKey, 'base64'))
   t.is(pushedMessage.apns.payload.payload, encodedPayload)
 
-  const requestLog = JSON.parse(await requestLogPromise).msg
-  t.ok(requestLog.includes('[requestId='), 'log includes request ID')
-  t.ok(requestLog.includes('[method=forward-push]'), 'log includes method')
-  t.ok(requestLog.includes('[publicKey='), 'log includes public key')
-  t.ok(requestLog.includes('succeeded after'), 'log includes successful result')
+  const requestLog = JSON.parse(await requestLogPromise)
+  t.ok(requestLog.requestId, 'log includes request ID')
+  t.is(requestLog.method, 'forward-push', 'log includes method')
+  t.ok(requestLog.publicKey, 'log includes public key')
+  t.ok(Number.isFinite(requestLog.duration), 'log includes duration')
+  t.is(requestLog.msg, 'Request succeeded', 'log includes successful result')
 
   const tShutdown = t.test('Shutdown')
   tShutdown.plan(1)

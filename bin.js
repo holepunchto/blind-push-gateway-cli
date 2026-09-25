@@ -3,10 +3,12 @@
 const fs = require('fs').promises
 const os = require('os')
 const path = require('path')
+const b4a = require('b4a')
 const Corestore = require('corestore')
 const HyperDHT = require('hyperdht')
+const { Server: InspectorServer } = require('hyperdht-inspector')
 const ProtomuxRPCRouter = require('protomux-rpc-router')
-const { Logger } = require('protomux-rpc-middleware')
+const defaultMiddleware = require('protomux-rpc-middleware')
 const IdEnc = require('hypercore-id-encoding')
 const goodbye = require('graceful-goodbye')
 const { command, flag } = require('paparam')
@@ -38,6 +40,14 @@ const runCmd = command(
   flag('--scraper-alias [scraper-alias]', '(optional) Alias with which to register to the scraper'),
   flag('--dry-run', 'Dry-run mode without Firebase'),
   flag('--bootstrap [bootstrap]', 'Bootstrap nodes for the DHT'),
+  flag(
+    '--trusted-peer|-t [trusted-peer]',
+    'Public key of a trusted peer. Can be specified multiple times.'
+  ).multiple(),
+  flag(
+    '--dangerously-enable-inspector',
+    'Enable remote process inspection for trusted peers. Disabled by default.'
+  ),
   async function ({ flags }) {
     const logger = pino({ name: SERVICE_NAME })
 
@@ -59,7 +69,8 @@ const runCmd = command(
       ...(flags.bootstrap ? { bootstrap: JSON.parse(flags.bootstrap) } : {})
     })
     const router = new ProtomuxRPCRouter()
-    router.use(new Logger(logger))
+    router.use(new defaultMiddleware.Logger(logger))
+    const trustedPublicKeys = (flags.trustedPeer || []).map((key) => IdEnc.decode(key))
 
     let pushService
     if (flags.dryRun) {
@@ -80,6 +91,48 @@ const runCmd = command(
       notification: config.notification,
       apnsTopic: config.apnsTopic
     })
+
+    if (trustedPublicKeys.length > 0) {
+      logger.info(
+        { trustedPublicKeys: trustedPublicKeys.map(IdEnc.normalize) },
+        'Trusted public keys'
+      )
+    }
+
+    if (flags.dangerouslyEnableInspector) {
+      const inspectorRouter = new ProtomuxRPCRouter()
+      inspectorRouter.use(
+        defaultMiddleware({
+          logger: {
+            instance: logger
+          }
+        })
+      )
+      inspectorRouter.use({
+        onrequest: (ctx, next) => {
+          const trusted = trustedPublicKeys.some((key) =>
+            b4a.equals(key, ctx.connection.remotePublicKey)
+          )
+          if (!trusted) throw new Error('Only trusted peers can use the inspector RPC router')
+
+          return next()
+        }
+      })
+
+      const inspectorServer = new InspectorServer(inspectorRouter)
+      await inspectorRouter.ready()
+
+      service.server.on('connection', (connection) => {
+        inspectorServer.handleConnection(connection)
+      })
+
+      goodbye(async () => {
+        logger.info('Closing inspector RPC router')
+        await inspectorRouter.close()
+      })
+
+      logger.warn('Remote process inspector enabled for trusted peers')
+    }
 
     goodbye(async () => {
       logger.info('Shutting down blind-push-gateway service')

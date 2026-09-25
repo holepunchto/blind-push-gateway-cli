@@ -67,6 +67,8 @@ blind-push-gateway run --dry-run --bootstrap '[{"host":"127.0.0.1","port":49737}
 - `--storage|-s [path]`: storage path, defaults to `~/.blind-push-gateway/storage`
 - `--dry-run`: dry-run mode without Firebase; log push payloads instead of sending them
 - `--bootstrap [bootstrap]`: JSON array of HyperDHT bootstrap nodes. Use this to join a testnet or a custom DHT network
+- `--trusted-peer|-t [trusted-peer]`: public key of a trusted peer. Can be specified multiple times
+- `--dangerously-enable-inspector`: enable remote process inspection for trusted peers. Disabled by default
 - `--scraper-public-key [scraper-public-key]`: public key of a dht-prometheus scraper. Can be hex or z32.
 - `--scraper-secret [scraper-secret]`: secret of the dht-prometheus scraper. Can be hex or z32.
 - `--scraper-alias [scraper-alias]`: optional alias with which to register to the scraper
