@@ -48,11 +48,11 @@ const runCmd = command(
   ).multiple(),
   flag(
     '--rate-limit-capacity [int]',
-    `(Advanced) capacity for the push notifications rate limit (defaults to ${DEFAULT_RATE_LIMIT_CAPACITY})`
+    `(Advanced) capacity for the rate limit (defaults to ${DEFAULT_RATE_LIMIT_CAPACITY})`
   ),
   flag(
     '--rate-limit-interval [int]',
-    `(Advanced) interval in ms for the push notifications rate limit (defaults to ${DEFAULT_RATE_LIMIT_INTERVAL})`
+    `(Advanced) interval in ms for the rate limit (defaults to ${DEFAULT_RATE_LIMIT_INTERVAL})`
   ),
   flag(
     '--dangerously-enable-inspector',
