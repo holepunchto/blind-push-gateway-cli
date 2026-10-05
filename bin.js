@@ -73,6 +73,9 @@ const runCmd = command(
     const storage = path.resolve(flags.storage || DEFAULT_STORAGE_PATH)
     logger.info(`Using storage: ${storage}`)
 
+    const rateLimitCapacity = parseInt(flags.rateLimitCapacity || DEFAULT_RATE_LIMIT_CAPACITY)
+    const rateLimitInterval = parseInt(flags.rateLimitInterval || DEFAULT_RATE_LIMIT_INTERVAL)
+
     const store = new Corestore(storage)
     const dht = new HyperDHT({
       keyPair: await store.createKeyPair('swarm-key'),
@@ -80,12 +83,7 @@ const runCmd = command(
     })
     const router = new ProtomuxRPCRouter()
     router.use(new defaultMiddleware.Logger(logger))
-    router.use(
-      defaultMiddleware.RateLimit.byPublicKey(
-        flags.rateLimitCapacity || DEFAULT_RATE_LIMIT_CAPACITY,
-        flags.rateLimitInterval || DEFAULT_RATE_LIMIT_INTERVAL
-      )
-    )
+    router.use(defaultMiddleware.RateLimit.byPublicKey(rateLimitCapacity, rateLimitInterval))
 
     const trustedPublicKeys = (flags.trustedPeer || []).map((key) => IdEnc.decode(key))
 
