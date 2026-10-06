@@ -16,6 +16,7 @@ const { ForwardPushRequest } = require('blind-push/encodings')
 
 const EXECUTABLE = path.join(__dirname, '..', 'bin.js')
 const CONFIG = path.join(__dirname, 'config.test.json')
+const DEBUG = false
 
 test('bin', async (t) => {
   const testnet = await createTestnet()
@@ -35,7 +36,11 @@ test('bin', async (t) => {
     cliStorageDir,
     '--dry-run',
     '--bootstrap',
-    JSON.stringify(bootstrap)
+    JSON.stringify(bootstrap),
+    '--rate-limit-capacity',
+    2,
+    '--rate-limit-interval',
+    10000
   ])
 
   // To avoid zombie processes in case there's an error
@@ -93,6 +98,26 @@ test('bin', async (t) => {
   t.ok(Number.isFinite(requestLog.duration), 'log includes duration')
   t.is(requestLog.msg, 'Request succeeded', 'log includes successful result')
 
+  const rateLimitPromise = waitForOutput(proc, 'RATE_LIMIT_EXCEEDED')
+
+  await rpc.request('forward-push', req, {
+    requestEncoding: ForwardPushRequest,
+    responseEncoding: cenc.none
+  })
+  t.pass('rate limit did not trigger')
+
+  try {
+    await rpc.request('forward-push', req, {
+      requestEncoding: ForwardPushRequest,
+      responseEncoding: cenc.none
+    })
+    t.fail('did not error')
+  } catch (e) {
+    t.is(e.cause.code, 'RATE_LIMIT_EXCEEDED')
+  }
+
+  await rateLimitPromise
+
   const tShutdown = t.test('Shutdown')
   tShutdown.plan(1)
   proc.on('exit', () => tShutdown.pass('CLI process shut down cleanly'))
@@ -124,13 +149,16 @@ async function waitForOutput(proc, text, timeout = 30000) {
     }, timeout)
 
     const stdoutDec = new NewlineDecoder('utf-8')
-    proc.stdout.on('data', (d) => {
+    const ondata = (d) => {
       for (const line of stdoutDec.push(d)) {
+        if (DEBUG) console.log(line)
         if (line.includes(text)) {
           clearTimeout(timer)
+          proc.stdout.off('data', ondata)
           resolve(line)
         }
       }
-    })
+    }
+    proc.stdout.on('data', ondata)
   })
 }

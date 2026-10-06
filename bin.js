@@ -24,6 +24,8 @@ const FcmPushService = require('./lib/fcm')
 const SERVICE_NAME = 'blind-push-gateway'
 const DEFAULT_CONFIG_PATH = path.join(os.homedir(), '.blind-push-gateway', 'config.json')
 const DEFAULT_STORAGE_PATH = path.join(os.homedir(), '.blind-push-gateway', 'storage')
+const DEFAULT_RATE_LIMIT_INTERVAL = 10
+const DEFAULT_RATE_LIMIT_CAPACITY = 100
 
 const runCmd = command(
   'run',
@@ -45,6 +47,14 @@ const runCmd = command(
     'Public key of a trusted peer. Can be specified multiple times.'
   ).multiple(),
   flag(
+    '--rate-limit-capacity [int]',
+    `(Advanced) capacity for the rate limit (defaults to ${DEFAULT_RATE_LIMIT_CAPACITY})`
+  ),
+  flag(
+    '--rate-limit-interval [int]',
+    `(Advanced) interval in ms for the rate limit (defaults to ${DEFAULT_RATE_LIMIT_INTERVAL})`
+  ),
+  flag(
     '--dangerously-enable-inspector',
     'Enable remote process inspection for trusted peers. Disabled by default.'
   ),
@@ -63,6 +73,9 @@ const runCmd = command(
     const storage = path.resolve(flags.storage || DEFAULT_STORAGE_PATH)
     logger.info(`Using storage: ${storage}`)
 
+    const rateLimitCapacity = parseInt(flags.rateLimitCapacity || DEFAULT_RATE_LIMIT_CAPACITY)
+    const rateLimitInterval = parseInt(flags.rateLimitInterval || DEFAULT_RATE_LIMIT_INTERVAL)
+
     const store = new Corestore(storage)
     const dht = new HyperDHT({
       keyPair: await store.createKeyPair('swarm-key'),
@@ -70,6 +83,8 @@ const runCmd = command(
     })
     const router = new ProtomuxRPCRouter()
     router.use(new defaultMiddleware.Logger(logger))
+    router.use(defaultMiddleware.RateLimit.byPublicKey(rateLimitCapacity, rateLimitInterval))
+
     const trustedPublicKeys = (flags.trustedPeer || []).map((key) => IdEnc.decode(key))
 
     let pushService
