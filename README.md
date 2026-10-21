@@ -1,8 +1,6 @@
 # blind-push-gateway-cli
 
-> **POC** - This is a proof-of-concept still. Breaking changes possible till the V1 release.
-
-CLI to run the blind-push-gateway service. It listens on Hyperswarm, accepts `forward-push` RPC requests, and forwards them through Firebase Cloud Messaging.
+CLI to run the blind-push-gateway service. It listens on HyperDHT, accepts `forward-push` RPC requests, and forwards them through Firebase Cloud Messaging.
 
 Uses [blind-push-gateway](https://github.com/holepunchto/blind-push-gateway) under the hood.
 
@@ -68,6 +66,8 @@ blind-push-gateway run --dry-run --bootstrap '[{"host":"127.0.0.1","port":49737}
 - `--dry-run`: dry-run mode without Firebase; log push payloads instead of sending them
 - `--bootstrap [bootstrap]`: JSON array of HyperDHT bootstrap nodes. Use this to join a testnet or a custom DHT network
 - `--trusted-peer|-t [trusted-peer]`: public key of a trusted peer. Can be specified multiple times
+- `--rate-limit-capacity [int]`: (advanced) per-peer rate limit bucket capacity, defaults to `100`
+- `--rate-limit-interval [int]`: (advanced) interval in ms to refill one rate limit token, defaults to `10`
 - `--dangerously-enable-inspector`: enable remote process inspection for trusted peers. Disabled by default
 - `--scraper-public-key [scraper-public-key]`: public key of a dht-prometheus scraper. Can be hex or z32.
 - `--scraper-secret [scraper-secret]`: secret of the dht-prometheus scraper. Can be hex or z32.
@@ -76,6 +76,6 @@ blind-push-gateway run --dry-run --bootstrap '[{"host":"127.0.0.1","port":49737}
 ## How It Works
 
 1. The operator starts the gateway with Firebase service account credentials (or with `--dry-run`).
-2. The gateway listens on Hyperswarm and accepts RPC connections through `protomux-rpc-router`.
+2. The gateway listens on HyperDHT and accepts RPC connections through `protomux-rpc-router`.
 3. A client sends a `forward-push` request encoded with `blind-push/encodings`.
-4. The gateway encodes the request, derives Android/APNS fields, and forwards the message through the configured push service.
+4. The gateway decodes the request, derives Android/APNS fields, and forwards the message through the configured push service.
